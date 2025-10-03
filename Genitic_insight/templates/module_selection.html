@@ -1,0 +1,2081 @@
+<!-- module_selection.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Model Trainer</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    
+    <!-- Main.CSS -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+    /* Footer Styles */
+    footer {
+        background: linear-gradient(135deg, #1a3a8f 0%, #0d6efd 100%);
+        color: #fff;
+        padding: 2.5rem 0;
+        margin-top: 5rem;
+        box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    footer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('{% static "images/dna-pattern.png" %}') repeat;
+        opacity: 0.05;
+        pointer-events: none;
+    }
+    
+    footer .container {
+        position: relative;
+        z-index: 1;
+    }
+    
+    footer p {
+        font-size: 1.1rem;
+        font-weight: 300;
+        letter-spacing: 0.5px;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    footer .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    footer .social-links a {
+        color: #fff;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    footer .social-links a:hover {
+        color: #aad1ff;
+        transform: translateY(-3px);
+    }
+    
+    footer .footer-links {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    footer .footer-links a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 400;
+        transition: all 0.3s ease;
+    }
+
+        footer .footer-links a:hover {
+            color: #aad1ff;
+            text-decoration: underline;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            footer {
+                padding: 2rem 0;
+            }
+
+            footer p {
+                font-size: 1rem;
+            }
+
+            footer .social-links,
+            footer .footer-links {
+                gap: 1rem;
+            }
+        }
+        /* Main styling for the application */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 90%;
+            margin: 0 auto;
+        }
+        
+        /* Styling for option boxes (file upload sections) */
+        .option-box {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 0;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: visible;
+            width: 100%;
+        }
+        
+        .option-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            width: 100%;
+        }
+        
+        .option-radio {
+            margin-right: 10px;
+            accent-color: #0d6efd;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .option-content {
+            padding: 0;
+            width: 100%;
+        }
+        
+        .disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        /* Card styling */
+        .card {
+            border: none;
+            border-radius: 0;
+            width: 100%;
+        }
+        
+        .card-body {
+            padding: 20px;
+            width: 100%;
+        }
+        
+        /* Dropdown styling for algorithm selection */
+        .ml-dropdown {
+            position: relative;
+            width: 100%;
+        }
+        
+        .ml-dropdown-btn {
+            background-color: white;
+            color: #333;
+            padding: 12px 16px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+        }
+        
+        .ml-dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1050;
+            margin-top: 5px;
+        }
+        
+        .ml-dropdown-content.show {
+            display: block;
+        }
+        
+        .ml-item {
+            color: #212529;
+            padding: 10px 16px;
+            text-decoration: none;
+            display: block;
+            border-bottom: 1px solid #f1f1f1;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .ml-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* Animation for dropdown arrow */
+        .bi-chevron-down {
+            transition: transform 0.2s ease;
+        }
+        
+        .ml-dropdown-btn.active .bi-chevron-down {
+            transform: rotate(180deg);
+        }
+        
+        /* Training button container */
+        .train-btn-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        /* Results section - initially hidden */
+        #results {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        /* Metric card styling */
+        .metric-card {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: white;
+        }
+        
+        /* Target column selector */
+        .target-column-selector {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        /* Chart containers */
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Grid layout for metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        /* Individual metric items */
+        .metric-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #0d6efd;
+        }
+        
+        /* Visualization section styling */
+        .visualization-section {
+            margin-top: 30px;
+        }
+        
+        .visualization-header {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        /* Custom modal styling for error alerts */
+        .error-modal .modal-header {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .error-modal .modal-body {
+            padding: 20px;
+        }
+        
+        .error-modal .btn-close {
+            filter: invert(1);
+        }
+
+        /* Parameters section styling */
+        .parameters-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .parameter-group {
+            margin-bottom: 15px;
+        }
+
+        .parameter-label {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .parameter-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        .parameter-description {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 3px;
+        }
+
+        /* Style for disabled inputs in "Train on Extracted Data" section */
+        .extracted-data-input {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        /* Selected algorithms list styling */
+        .selected-algorithms {
+            margin-top: 15px;
+        }
+
+        .selected-algorithm-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .selected-algorithm-name {
+            flex-grow: 1;
+        }
+
+        .selected-algorithm-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Parameters modal styling */
+        .parameters-modal .modal-dialog {
+            max-width: 800px;
+        }
+
+        /* Comparative results table styling */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th, 
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .comparison-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .best-metric {
+            font-weight: bold;
+            color: #198754;
+        }
+
+        /* Report section styling - initially hidden */
+        .report-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .form-check {
+            margin-bottom: 5px;
+        }
+
+        .form-check-input {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'partials/navbar.html' %}
+    
+    <!-- Error Modal - Will be shown when errors occur -->
+    <div class="modal fade error-modal" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="errorModalBody">
+                    <!-- Error message will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Algorithm Parameters Modal -->
+    <div class="modal fade parameters-modal" id="parametersModal" tabindex="-1" aria-labelledby="parametersModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="parametersModalLabel">Algorithm Parameters</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="parametersModalBody">
+                    <!-- Parameters will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveParametersBtn">Save Parameters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h1 class="my-4">Sequence Analysis</h1>
+        
+        <!-- File Upload Sections -->
+        <div class="option-box">
+            <div class="option-header">
+                <input type="radio" name="fileOption" class="option-radio" id="op1-radio" checked>
+                <h5 class="m-0">Separate Training and Testing Files</h5>
+            </div>
+            <div class="option-content" id="op1-content">
+                <div class="file-option-section active" id="separateSection">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Training Data</label>
+                                <input class="form-control" type="file" name="training_file" id="trainingFile" accept=".csv">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Testing Data</label>
+                                <input class="form-control" type="file" name="testing_file" id="testingFile" accept=".csv">
+                            </div>
+                            <div id="targetColumnContainerSeparate" class="target-column-selector">
+                                <label class="form-label">Select Target Column</label>
+                                <select class="form-select" name="target_column_separate" id="targetColumnSeparate"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="option-box">
+            <div class="option-header">
+                <input type="radio" name="fileOption" class="option-radio" id="op2-radio">
+                <h5 class="m-0">Dataset File with Split</h5>
+            </div>
+            <div class="option-content disabled" id="op2-content">
+                <div class="file-option-section" id="singleSection">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Dataset File</label>
+                                <input class="form-control" type="file" name="dataset_file" id="datasetFile" accept=".csv">
+                                <div class="form-text">The last column will be used as the target variable by default</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Train Percentage</label>
+                                    <input type="number" class="form-control" name="train_percent" value="80" min="1" max="99">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Test Percentage</label>
+                                    <input type="number" class="form-control" name="test_percent" value="20" min="1" max="99" readonly>
+                                </div>
+                            </div>
+                            <div id="targetColumnContainer" class="target-column-selector">
+                                <label class="form-label">Select Target Column</label>
+                                <select class="form-select" name="target_column" id="targetColumn"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- "Train on Extracted Data" Section -->
+        <div class="option-box">
+            <div class="option-header">
+                <input type="radio" name="fileOption" class="option-radio" id="op3-radio">
+                <h5 class="m-0">Train on Extracted Data</h5>
+            </div>
+            <div class="option-content disabled" id="op3-content">
+                <div class="file-option-section" id="extractedSection">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Extracted Data File</label>
+                                <input class="form-control extracted-data-input" type="text" name="extracted_file" id="extractedFile" readonly>
+                                <div class="form-text">Automatically populated with extracted data</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Train Percentage</label>
+                                    <input type="number" class="form-control extracted-train-percent" name="extracted_train_percent" value="80" min="1" max="99">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Test Percentage</label>
+                                    <input type="number" class="form-control extracted-data-input" name="extracted_test_percent" value="20" min="1" max="99" readonly>
+                                </div>
+                            </div>
+                            <div id="targetColumnContainerExtracted" class="target-column-selector">
+                                <label class="form-label">Target Column</label>
+                                <select class="form-select extracted-data-input" name="target_column_extracted" id="targetColumnExtracted" disabled></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Algorithm Selection Section - This is shared across all options -->
+        <div class="ML_box">
+            <div class="ML_header">
+                <h5 class="m-0">Machine Learning Algorithm</h5>
+            </div>
+            <div class="ML_content">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="ml-dropdown">
+                            <button type="button" class="ml-dropdown-btn" id="mlDropdownBtn">
+                                <span id="selectedAlgorithm">Select Algorithm</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <div class="ml-dropdown-content" id="mlDropdown"></div>
+                        </div>
+                        
+                        <!-- Selected algorithms list -->
+                        <div class="selected-algorithms" id="selectedAlgorithmsContainer">
+                            <!-- Selected algorithms will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Button Section -->
+        <div class="train-btn-container text-center">
+            <button type="button" class="btn btn-success btn-lg" id="trainButton">
+                <i class="bi bi-play-circle me-1"></i> Train Models
+            </button>
+            <div id="loadingIndicator" class="mt-3" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Training models...</p>
+            </div>
+        </div>
+
+        <!-- Results Section - Initially hidden -->
+        <div id="results">
+            <div class="header">
+                <h5 class="m-0">Training Results</h5>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <div class="card-body" id="resultContent"></div>
+                </div>
+            </div>
+            
+            <!-- Download Analysis Report Section - Initially hidden -->
+            <div class="report-section" id="reportSection">
+                <div class="card mt-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Download Analysis Report</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Report Format</label>
+                                    <select class="form-select" id="reportFormat">
+                                        <option value="pdf">PDF</option>
+                                        <option value="html">HTML</option>
+                                        <option value="csv">CSV (Metrics Only)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Report Name</label>
+                                    <input type="text" class="form-control" id="reportName" value="Model_Analysis_Report">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Include in Report</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="includeMetrics" checked>
+                                <label class="form-check-label" for="includeMetrics">Model Metrics</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="includeCharts" checked>
+                                <label class="form-check-label" for="includeCharts">Visualizations</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="includeParameters" checked>
+                                <label class="form-check-label" for="includeParameters">Algorithm Parameters</label>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="generateReportBtn">
+                            <i class="bi bi-download me-1"></i> Generate & Download Report
+                        </button>
+                        <div id="reportLoadingIndicator" class="mt-3" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Generating report...</span>
+                            </div>
+                            <p>Generating report...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'partials/footer.html' %}
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Global variables to store chart instances and model data
+        window.rocChart = null;
+        window.prcChart = null;
+        window.modelData = null;
+        window.errorModal = null; // Will store the Bootstrap modal instance
+        window.parametersModal = null; // Will store the parameters modal instance
+        window.currentAlgorithm = null; // Currently selected algorithm for parameter editing
+        window.selectedAlgorithms = []; // Array to store selected algorithms with their parameters
+
+        // Algorithm parameters configuration
+        const ALGORITHM_PARAMETERS = {
+            'random_forest': [
+                {
+                    name: 'n_estimators',
+                    label: 'Number of Trees',
+                    type: 'number',
+                    default: 100,
+                    min: 10,
+                    max: 1000,
+                    step: 10,
+                    description: 'The number of trees in the forest (10-1000)'
+                },
+                {
+                    name: 'max_depth',
+                    label: 'Max Depth',
+                    type: 'number',
+                    default: 10,
+                    min: 1,
+                    max: 50,
+                    description: 'Maximum depth of each tree (1-50, higher values may cause overfitting)'
+                },
+                {
+                    name: 'min_samples_split',
+                    label: 'Min Samples Split',
+                    type: 'number',
+                    default: 2,
+                    min: 2,
+                    max: 20,
+                    description: 'Minimum number of samples required to split an internal node'
+                },
+                {
+                    name: 'min_samples_leaf',
+                    label: 'Min Samples Leaf',
+                    type: 'number',
+                    default: 1,
+                    min: 1,
+                    max: 10,
+                    description: 'Minimum number of samples required to be at a leaf node'
+                },
+                {
+                    name: 'max_features',
+                    label: 'Max Features',
+                    type: 'select',
+                    options: ['auto', 'sqrt', 'log2'],
+                    default: 'auto',
+                    description: 'Number of features to consider when looking for the best split'
+                },
+                {
+                    name: 'bootstrap',
+                    label: 'Bootstrap Sampling',
+                    type: 'checkbox',
+                    default: true,
+                    description: 'Whether bootstrap samples are used when building trees'
+                }
+            ],
+            'decision_tree': [
+                {
+                    name: 'max_depth',
+                    label: 'Max Depth',
+                    type: 'number',
+                    default: 5,
+                    min: 1,
+                    max: 30,
+                    description: 'Maximum depth of the tree (1-30)'
+                },
+                {
+                    name: 'min_samples_split',
+                    label: 'Min Samples Split',
+                    type: 'number',
+                    default: 2,
+                    min: 2,
+                    max: 20,
+                    description: 'Minimum number of samples required to split an internal node'
+                },
+                {
+                    name: 'min_samples_leaf',
+                    label: 'Min Samples Leaf',
+                    type: 'number',
+                    default: 1,
+                    min: 1,
+                    max: 10,
+                    description: 'Minimum number of samples required to be at a leaf node'
+                },
+                {
+                    name: 'max_features',
+                    label: 'Max Features',
+                    type: 'select',
+                    options: ['auto', 'sqrt', 'log2', 'None'],
+                    default: 'None',
+                    description: 'Number of features to consider when looking for the best split'
+                },
+                {
+                    name: 'criterion',
+                    label: 'Split Criterion',
+                    type: 'select',
+                    options: ['gini', 'entropy'],
+                    default: 'gini',
+                    description: 'Function to measure the quality of a split'
+                }
+            ],
+            'svm': [
+                {
+                    name: 'C',
+                    label: 'Regularization (C)',
+                    type: 'number',
+                    default: 1.0,
+                    min: 0.01,
+                    max: 100,
+                    step: 0.1,
+                    description: 'Regularization parameter (smaller values = stronger regularization)'
+                },
+                {
+                    name: 'kernel',
+                    label: 'Kernel',
+                    type: 'select',
+                    options: ['linear', 'rbf', 'poly', 'sigmoid'],
+                    default: 'rbf',
+                    description: 'Kernel type to be used in the algorithm'
+                },
+                {
+                    name: 'gamma',
+                    label: 'Gamma',
+                    type: 'select',
+                    options: ['scale', 'auto'],
+                    default: 'scale',
+                    description: 'Kernel coefficient for "rbf", "poly" and "sigmoid"'
+                },
+                {
+                    name: 'degree',
+                    label: 'Degree',
+                    type: 'number',
+                    default: 3,
+                    min: 1,
+                    max: 10,
+                    description: 'Degree of polynomial kernel function ("poly" only)'
+                },
+                {
+                    name: 'probability',
+                    label: 'Probability Estimates',
+                    type: 'checkbox',
+                    default: true,
+                    description: 'Enable probability estimates (required for ROC curves)'
+                }
+            ],
+            'knn': [
+                {
+                    name: 'n_neighbors',
+                    label: 'Number of Neighbors',
+                    type: 'number',
+                    default: 5,
+                    min: 1,
+                    max: 50,
+                    description: 'Number of neighbors to use for classification'
+                },
+                {
+                    name: 'weights',
+                    label: 'Weight Function',
+                    type: 'select',
+                    options: ['uniform', 'distance'],
+                    default: 'uniform',
+                    description: 'Weight function used in prediction'
+                },
+                {
+                    name: 'algorithm',
+                    label: 'Algorithm',
+                    type: 'select',
+                    options: ['auto', 'ball_tree', 'kd_tree', 'brute'],
+                    default: 'auto',
+                    description: 'Algorithm used to compute nearest neighbors'
+                },
+                {
+                    name: 'leaf_size',
+                    label: 'Leaf Size',
+                    type: 'number',
+                    default: 30,
+                    min: 10,
+                    max: 100,
+                    description: 'Leaf size passed to BallTree or KDTree'
+                },
+                {
+                    name: 'p',
+                    label: 'Minkowski Power',
+                    type: 'number',
+                    default: 2,
+                    min: 1,
+                    max: 5,
+                    description: 'Power parameter for Minkowski metric (1=manhattan, 2=euclidean)'
+                }
+            ],
+            'neural_network': [
+                {
+                    name: 'hidden_layer_sizes',
+                    label: 'Hidden Layer Sizes',
+                    type: 'text',
+                    default: '100',
+                    description: 'Number of neurons in each hidden layer (comma separated, e.g. "100,50" for two layers)'
+                },
+                {
+                    name: 'activation',
+                    label: 'Activation Function',
+                    type: 'select',
+                    options: ['relu', 'logistic', 'tanh'],
+                    default: 'relu',
+                    description: 'Activation function for the hidden layers'
+                },
+                {
+                    name: 'solver',
+                    label: 'Solver',
+                    type: 'select',
+                    options: ['lbfgs', 'sgd', 'adam'],
+                    default: 'adam',
+                    description: 'The solver for weight optimization'
+                },
+                {
+                    name: 'alpha',
+                    label: 'Alpha (L2 penalty)',
+                    type: 'number',
+                    default: 0.0001,
+                    min: 0.00001,
+                    max: 1,
+                    step: 0.00001,
+                    description: 'L2 regularization penalty parameter'
+                },
+                {
+                    name: 'learning_rate',
+                    label: 'Learning Rate',
+                    type: 'select',
+                    options: ['constant', 'invscaling', 'adaptive'],
+                    default: 'constant',
+                    description: 'Learning rate schedule for weight updates'
+                },
+                {
+                    name: 'learning_rate_init',
+                    label: 'Initial Learning Rate',
+                    type: 'number',
+                    default: 0.001,
+                    min: 0.0001,
+                    max: 0.1,
+                    step: 0.0001,
+                    description: 'Initial learning rate (for "sgd" or "adam")'
+                },
+                {
+                    name: 'max_iter',
+                    label: 'Max Iterations',
+                    type: 'number',
+                    default: 200,
+                    min: 50,
+                    max: 1000,
+                    description: 'Maximum number of iterations'
+                },
+                {
+                    name: 'early_stopping',
+                    label: 'Early Stopping',
+                    type: 'checkbox',
+                    default: false,
+                    description: 'Stop training when validation score stops improving'
+                }
+            ],
+            'logistic_regression': [
+                {
+                    name: 'C',
+                    label: 'Inverse Regularization',
+                    type: 'number',
+                    default: 1.0,
+                    min: 0.01,
+                    max: 100,
+                    step: 0.01,
+                    description: 'Inverse of regularization strength (smaller values = stronger regularization)'
+                },
+                {
+                    name: 'penalty',
+                    label: 'Penalty',
+                    type: 'select',
+                    options: ['l2', 'l1', 'elasticnet', 'none'],
+                    default: 'l2',
+                    description: 'Norm used in the penalization'
+                },
+                {
+                    name: 'solver',
+                    label: 'Solver',
+                    type: 'select',
+                    options: ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
+                    default: 'lbfgs',
+                    description: 'Algorithm to use in optimization'
+                },
+                {
+                    name: 'max_iter',
+                    label: 'Max Iterations',
+                    type: 'number',
+                    default: 100,
+                    min: 10,
+                    max: 1000,
+                    description: 'Maximum number of iterations for solver to converge'
+                },
+                {
+                    name: 'multi_class',
+                    label: 'Multi-class Strategy',
+                    type: 'select',
+                    options: ['auto', 'ovr', 'multinomial'],
+                    default: 'auto',
+                    description: 'Strategy for multi-class classification'
+                },
+                {
+                    name: 'l1_ratio',
+                    label: 'L1 Ratio',
+                    type: 'number',
+                    default: 0.5,
+                    min: 0,
+                    max: 1,
+                    step: 0.01,
+                    description: 'ElasticNet mixing parameter (0-1, 0=L2, 1=L1)'
+                }
+            ],
+            'linear_regression': [
+                {
+                    name: 'fit_intercept',
+                    label: 'Fit Intercept',
+                    type: 'checkbox',
+                    default: true,
+                    description: 'Whether to calculate the intercept for this model'
+                },
+                {
+                    name: 'normalize',
+                    label: 'Normalize',
+                    type: 'checkbox',
+                    default: false,
+                    description: 'Whether to normalize the features before fitting'
+                },
+                {
+                    name: 'copy_X',
+                    label: 'Copy X',
+                    type: 'checkbox',
+                    default: true,
+                    description: 'Whether to copy X or overwrite it'
+                },
+                {
+                    name: 'positive',
+                    label: 'Positive Coefficients',
+                    type: 'checkbox',
+                    default: false,
+                    description: 'Force coefficients to be positive'
+                }
+            ]
+        };
+
+        /**
+         * Initialize the error modal when DOM is loaded
+         */
+        function initializeErrorModal() {
+            const modalElement = document.getElementById('errorModal');
+            window.errorModal = new bootstrap.Modal(modalElement);
+        }
+
+        /**
+         * Initialize the parameters modal when DOM is loaded
+         */
+        function initializeParametersModal() {
+            const modalElement = document.getElementById('parametersModal');
+            window.parametersModal = new bootstrap.Modal(modalElement);
+        }
+    
+        /**
+         * Show error message in a modal popup
+         * @param {string} message - The error message to display
+         * @param {string} [title='Error'] - The title for the error modal
+         */
+        function showErrorModal(message, title = 'Error') {
+            document.getElementById('errorModalLabel').textContent = title;
+            document.getElementById('errorModalBody').textContent = message;
+            window.errorModal.show();
+        }
+
+        /**
+         * Show parameters modal for a specific algorithm
+         * @param {string} algorithm - The algorithm to show parameters for
+         * @param {Object} [currentParams] - Current parameter values
+         */
+        function showParametersModal(algorithm, currentParams = {}) {
+            window.currentAlgorithm = algorithm;
+            const modalBody = document.getElementById('parametersModalBody');
+            modalBody.innerHTML = '';
+            
+            // Set modal title
+            document.getElementById('parametersModalLabel').textContent = `${algorithm.replace('_', ' ').toUpperCase()} Parameters`;
+            
+            // Get parameters for this algorithm
+            const parameters = ALGORITHM_PARAMETERS[algorithm] || [];
+            
+            if (parameters.length === 0) {
+                modalBody.innerHTML = '<p>This algorithm has no configurable parameters.</p>';
+            } else {
+                // Create form for parameters
+                const form = document.createElement('form');
+                form.id = 'parametersForm';
+                
+                parameters.forEach(param => {
+                    const group = document.createElement('div');
+                    group.className = 'parameter-group mb-3';
+                    
+                    const label = document.createElement('label');
+                    label.className = 'form-label parameter-label';
+                    label.textContent = param.label;
+                    label.htmlFor = `param_${algorithm}_${param.name}`;
+                    
+                    let input;
+                    
+                    if (param.type === 'select') {
+                        input = document.createElement('select');
+                        input.className = 'form-select parameter-input';
+                        input.id = `param_${algorithm}_${param.name}`;
+                        input.name = param.name;
+                        
+                        param.options.forEach(option => {
+                            const optElement = document.createElement('option');
+                            optElement.value = option;
+                            optElement.textContent = option;
+                            if (option === (currentParams[param.name] || param.default)) {
+                                optElement.selected = true;
+                            }
+                            input.appendChild(optElement);
+                        });
+                    } else if (param.type === 'checkbox') {
+                        const div = document.createElement('div');
+                        div.className = 'form-check';
+                        
+                        input = document.createElement('input');
+                        input.type = 'checkbox';
+                        input.className = 'form-check-input parameter-input';
+                        input.id = `param_${algorithm}_${param.name}`;
+                        input.name = param.name;
+                        input.checked = currentParams[param.name] !== undefined ? currentParams[param.name] : param.default;
+                        
+                        const checkLabel = document.createElement('label');
+                        checkLabel.className = 'form-check-label';
+                        checkLabel.htmlFor = `param_${algorithm}_${param.name}`;
+                        checkLabel.textContent = 'Enabled';
+                        
+                        div.appendChild(input);
+                        div.appendChild(checkLabel);
+                        group.appendChild(label);
+                        group.appendChild(div);
+                    } else {
+                        input = document.createElement('input');
+                        input.className = 'form-control parameter-input';
+                        input.type = param.type || 'number';
+                        input.id = `param_${algorithm}_${param.name}`;
+                        input.name = param.name;
+                        input.value = currentParams[param.name] !== undefined ? currentParams[param.name] : param.default || '';
+                        
+                        if (param.type === 'number') {
+                            input.min = param.min || '';
+                            input.max = param.max || '';
+                            input.step = param.step || '1';
+                        }
+                    }
+                    
+                    const description = document.createElement('div');
+                    description.className = 'parameter-description text-muted';
+                    description.textContent = param.description;
+                    
+                    if (param.type !== 'checkbox') {
+                        group.appendChild(label);
+                        group.appendChild(input);
+                    }
+                    group.appendChild(description);
+                    
+                    form.appendChild(group);
+                });
+                
+                modalBody.appendChild(form);
+            }
+            
+            window.parametersModal.show();
+        }
+
+        /**
+         * Get parameter values from the parameters modal form
+         * @returns {Object} Parameter names and values
+         */
+        function getModalParameterValues() {
+            const parameters = {};
+            const form = document.getElementById('parametersForm');
+            if (!form) return parameters;
+            
+            const inputs = form.querySelectorAll('.parameter-input');
+            
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    parameters[input.name] = input.checked;
+                } else if (input.type === 'number' && input.value !== '') {
+                    parameters[input.name] = parseFloat(input.value);
+                } else if (input.tagName === 'SELECT') {
+                    parameters[input.name] = input.value;
+                } else {
+                    parameters[input.name] = input.value;
+                }
+            });
+            
+            return parameters;
+        }
+
+        /**
+         * Add a selected algorithm to the list
+         * @param {string} algorithm - The algorithm to add
+         * @param {Object} parameters - Algorithm parameters
+         */
+        function addSelectedAlgorithm(algorithm, parameters = {}) {
+            // Check if algorithm is already selected
+            if (window.selectedAlgorithms.some(a => a.algorithm === algorithm)) {
+                showErrorModal(`${algorithm.replace('_', ' ').toUpperCase()} is already selected`, 'Duplicate Algorithm');
+                return;
+            }
+            
+            // Add to selected algorithms array
+            window.selectedAlgorithms.push({
+                algorithm,
+                parameters,
+                displayName: algorithm.replace('_', ' ').toUpperCase()
+            });
+            
+            // Update the UI
+            updateSelectedAlgorithmsList();
+        }
+
+        /**
+         * Update the selected algorithms list in the UI
+         */
+        function updateSelectedAlgorithmsList() {
+            const container = document.getElementById('selectedAlgorithmsContainer');
+            container.innerHTML = '';
+            
+            if (window.selectedAlgorithms.length === 0) {
+                container.innerHTML = '<p class="text-muted">No algorithms selected</p>';
+                return;
+            }
+            
+            window.selectedAlgorithms.forEach((algo, index) => {
+                const item = document.createElement('div');
+                item.className = 'selected-algorithm-item';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'selected-algorithm-name';
+                nameSpan.textContent = algo.displayName;
+                
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'selected-algorithm-actions';
+                
+                // Edit button
+                const editBtn = document.createElement('button');
+                editBtn.className = 'btn btn-sm btn-outline-primary';
+                editBtn.innerHTML = '<i class="bi bi-pencil"></i>';
+                editBtn.title = 'Edit Parameters';
+                editBtn.addEventListener('click', () => {
+                    showParametersModal(algo.algorithm, algo.parameters);
+                });
+                
+                // Remove button
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn btn-sm btn-outline-danger';
+                removeBtn.innerHTML = '<i class="bi bi-trash"></i>';
+                removeBtn.title = 'Remove Algorithm';
+                removeBtn.addEventListener('click', () => {
+                    window.selectedAlgorithms.splice(index, 1);
+                    updateSelectedAlgorithmsList();
+                });
+                
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(removeBtn);
+                
+                item.appendChild(nameSpan);
+                item.appendChild(actionsDiv);
+                
+                container.appendChild(item);
+            });
+        }
+
+        /**
+         * Draws ROC curve using Chart.js
+         * @param {Array} fpr - Array of false positive rates
+         * @param {Array} tpr - Array of true positive rates
+         * @param {number} auc - Area Under Curve value
+         * @param {string} algorithmName - Name of the algorithm for the legend
+         * @param {string} color - Color for the curve
+         */
+        function drawROCCurve(fpr, tpr, auc, algorithmName, color) {
+            // Create or reuse container
+            let container = document.getElementById('rocCurveContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'rocCurveContainer';
+                container.className = 'chart-container mb-4';
+                container.innerHTML = '<canvas id="rocCurve"></canvas>';
+                document.getElementById('resultContent').appendChild(container);
+            }
+            
+            const ctx = container.querySelector('canvas').getContext('2d');
+            
+            // If chart doesn't exist, create it
+            if (!window.rocChart) {
+                window.rocChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            // Random classifier line
+                            {
+                                label: 'Random Classifier',
+                                data: [{x: 0, y: 0}, {x: 1, y: 1}],
+                                borderColor: 'rgba(169, 169, 169, 1)',
+                                borderDash: [5, 5],
+                                fill: false,
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += `FPR: ${context.parsed.x.toFixed(4)}, TPR: ${context.parsed.y.toFixed(4)}`;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: {
+                                    display: true,
+                                    text: 'False Positive Rate',
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                },
+                                min: 0,
+                                max: 1,
+                                ticks: {
+                                    stepSize: 0.1
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'True Positive Rate',
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                },
+                                min: 0,
+                                max: 1,
+                                ticks: {
+                                    stepSize: 0.1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Add new dataset for this algorithm
+            window.rocChart.data.datasets.push({
+                label: `${algorithmName} (AUC = ${auc.toFixed(4)})`,
+                data: tpr.map((t, i) => ({x: fpr[i], y: t})),
+                borderColor: color,
+                backgroundColor: color.replace(')', ', 0.2)').replace('rgb', 'rgba'),
+                fill: false,
+                tension: 0.1,
+                pointRadius: 0
+            });
+            
+            window.rocChart.update();
+        }
+    
+        /**
+         * Draws Precision-Recall curve using Chart.js
+         * @param {Array} recall - Array of recall values
+         * @param {Array} precision - Array of precision values
+         * @param {number} auc - Area Under Curve value
+         * @param {string} algorithmName - Name of the algorithm for the legend
+         * @param {string} color - Color for the curve
+         */
+        function drawPRCCurve(recall, precision, auc, algorithmName, color) {
+            // Create or reuse container
+            let container = document.getElementById('prcCurveContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'prcCurveContainer';
+                container.className = 'chart-container';
+                container.innerHTML = '<canvas id="prcCurve"></canvas>';
+                document.getElementById('resultContent').appendChild(container);
+            }
+            
+            const ctx = container.querySelector('canvas').getContext('2d');
+            
+            // If chart doesn't exist, create it
+            if (!window.prcChart) {
+                window.prcChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: []
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += `Recall: ${context.parsed.x.toFixed(4)}, Precision: ${context.parsed.y.toFixed(4)}`;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: {
+                                    display: true,
+                                    text: 'Recall',
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                },
+                                min: 0,
+                                max: 1,
+                                ticks: {
+                                    stepSize: 0.1
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Precision',
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                },
+                                min: 0,
+                                max: 1,
+                                ticks: {
+                                    stepSize: 0.1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Add new dataset for this algorithm
+            window.prcChart.data.datasets.push({
+                label: `${algorithmName} (AP = ${auc.toFixed(4)})`,
+                data: precision.map((p, i) => ({x: recall[i], y: p})),
+                borderColor: color,
+                backgroundColor: color.replace(')', ', 0.2)').replace('rgb', 'rgba'),
+                fill: false,
+                tension: 0.1,
+                pointRadius: 0
+            });
+            
+            window.prcChart.update();
+        }
+
+        /**
+         * Generate a color for an algorithm based on its index
+         * @param {number} index - Index of the algorithm
+         * @returns {string} RGB color string
+         */
+        function getAlgorithmColor(index) {
+            const colors = [
+                'rgb(75, 192, 192)',  // teal
+                'rgb(153, 102, 255)', // purple
+                'rgb(255, 159, 64)',  // orange
+                'rgb(54, 162, 235)',  // blue
+                'rgb(255, 99, 132)',  // red
+                'rgb(201, 203, 207)', // gray
+                'rgb(255, 205, 86)'   // yellow
+            ];
+            return colors[index % colors.length];
+        }
+    
+        // Initialize page when DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeErrorModal();
+            initializeParametersModal();
+            
+            // File option toggle functionality
+            const radioButtons = document.querySelectorAll('input[name="fileOption"]');
+            const contents = document.querySelectorAll('.option-content');
+    
+            // Set initial state - first option enabled by default
+            document.getElementById('op1-content').classList.remove('disabled');
+            document.getElementById('op2-content').classList.add('disabled');
+            document.getElementById('op3-content').classList.add('disabled');
+            
+            // Add event listeners for radio buttons
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    contents.forEach(content => {
+                        if (content.id === this.id.replace('-radio', '-content')) {
+                            content.classList.remove('disabled');
+                        } else {
+                            content.classList.add('disabled');
+                        }
+                    });
+
+                    // For the extracted data option, we need to populate the algorithm dropdown immediately
+                    if (this.id === 'op3-radio') {
+                        populateAlgorithmDropdown();
+                    }
+                });
+            });
+    
+            // ML Algorithm Dropdown functionality
+            const mlDropdownBtn = document.getElementById('mlDropdownBtn');
+            const mlDropdown = document.getElementById('mlDropdown');
+            
+            // Initialize dropdown state
+            mlDropdownBtn.classList.remove('active');
+            mlDropdown.classList.remove('show');
+            
+            // Toggle dropdown on button click
+            mlDropdownBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.toggle('active');
+                mlDropdown.classList.toggle('show');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!mlDropdownBtn.contains(e.target) && !mlDropdown.contains(e.target)) {
+                    mlDropdownBtn.classList.remove('active');
+                    mlDropdown.classList.remove('show');
+                }
+            });
+            
+            // Close dropdown on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    mlDropdownBtn.classList.remove('active');
+                    mlDropdown.classList.remove('show');
+                }
+            });
+    
+            // Update test percentage automatically based on train percentage
+            document.querySelector('input[name="extracted_train_percent"]').addEventListener('change', function() {
+                const testPercent = 100 - parseInt(this.value);
+                document.querySelector('input[name="extracted_test_percent"]').value = testPercent;
+            });
+    
+            // File upload handlers - analyze files when selected
+            document.getElementById('trainingFile').addEventListener('change', function(e) {
+                if (this.files.length > 0) {
+                    analyzeFile(this.files[0], true)
+                        .catch(error => {
+                            console.error('Error analyzing file:', error);
+                            showErrorModal('Error analyzing file: ' + error.message || error);
+                        });
+                }
+            });
+    
+            document.getElementById('datasetFile').addEventListener('change', function(e) {
+                if (this.files.length > 0) {
+                    analyzeFile(this.files[0], false)
+                        .catch(error => {
+                            console.error('Error analyzing file:', error);
+                            showErrorModal('Error analyzing file: ' + error.message || error);
+                        });
+                }
+            });
+    
+            // Training button handler
+            document.getElementById('trainButton').addEventListener('click', trainModel);
+
+            // Save parameters button handler
+            document.getElementById('saveParametersBtn').addEventListener('click', function() {
+                const parameters = getModalParameterValues();
+                
+                // Find the algorithm in our selected algorithms and update its parameters
+                const algorithmIndex = window.selectedAlgorithms.findIndex(
+                    a => a.algorithm === window.currentAlgorithm
+                );
+                
+                if (algorithmIndex !== -1) {
+                    window.selectedAlgorithms[algorithmIndex].parameters = parameters;
+                    updateSelectedAlgorithmsList();
+                } else {
+                    // If it's a new algorithm, add it to the list
+                    addSelectedAlgorithm(window.currentAlgorithm, parameters);
+                }
+                
+                window.parametersModal.hide();
+            });
+
+            // Generate report button handler
+            document.getElementById('generateReportBtn').addEventListener('click', generateAnalysisReport);
+
+            // Automatically populate extracted data fields (simulating data from another process)
+            simulateExtractedDataPopulation();
+        });
+
+        /**
+         * Simulate populating the extracted data fields automatically
+         * This is a placeholder for real data population logic
+         */
+        function simulateExtractedDataPopulation() {
+            // These values would normally come from your data extraction process
+            const extractedData = {
+                filename: 'extracted_features.csv',
+                trainPercent: 80,
+                testPercent: 20,
+                targetColumn: 'label'  // Default target column name
+            };
+
+            // Populate the extracted data fields
+            document.getElementById('extractedFile').value = extractedData.filename;
+            document.querySelector('input[name="extracted_train_percent"]').value = extractedData.trainPercent;
+            document.querySelector('input[name="extracted_test_percent"]').value = extractedData.testPercent;
+
+            // Create and populate the target column dropdown (disabled)
+            const targetColumnSelector = document.getElementById('targetColumnExtracted');
+            const option = document.createElement('option');
+            option.value = extractedData.targetColumn;
+            option.textContent = extractedData.targetColumn;
+            option.selected = true;
+            targetColumnSelector.appendChild(option);
+
+            // Show the target column selector
+            document.getElementById('targetColumnContainerExtracted').style.display = 'block';
+        }
+    
+        /**
+         * Analyzes an uploaded file to extract headers and populate target column dropdown
+         * @param {File} file - The uploaded file
+         * @param {boolean} isSeparateFiles - Whether this is for separate train/test files
+         * @returns {Promise} Resolves with file analysis results
+         */
+        function analyzeFile(file, isSeparateFiles = false) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const contents = e.target.result;
+                        const lines = contents.split('\n').filter(line => line.trim() !== '');
+                        
+                        if (lines.length < 2) {
+                            reject(new Error('File must contain at least one data row'));
+                            return;
+                        }
+                        
+                        // Extract headers from first line
+                        const headers = lines[0].split(',').map(h => h.trim());
+                        const targetColumnSelector = isSeparateFiles ? 
+                            document.getElementById('targetColumnSeparate') : 
+                            document.getElementById('targetColumn');
+                        
+                        // Clear and populate target column dropdown
+                        targetColumnSelector.innerHTML = '';
+                        headers.forEach((header, index) => {
+                            const option = document.createElement('option');
+                            option.value = index;
+                            option.textContent = header;
+                            if (index === headers.length - 1) {
+                                option.selected = true; // Default to last column
+                            }
+                            targetColumnSelector.appendChild(option);
+                        });
+                        
+                        // Show target column selector
+                        const targetColumnContainer = isSeparateFiles ? 
+                            document.getElementById('targetColumnContainerSeparate') : 
+                            document.getElementById('targetColumnContainer');
+                        targetColumnContainer.style.display = 'block';
+                        
+                        // Populate algorithm dropdown now that we have file info
+                        populateAlgorithmDropdown();
+                        
+                        resolve({
+                            headers,
+                            sampleData: lines.slice(1, 3).join('\n') // First 2 data rows
+                        });
+                    } catch (error) {
+                        reject(new Error('Error parsing file: ' + error.message));
+                    }
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error('Error reading file'));
+                };
+                
+                reader.readAsText(file);
+            });
+        }
+    
+        /**
+         * Populates the algorithm dropdown with available options
+         */
+        function populateAlgorithmDropdown() {
+            const mlDropdown = document.getElementById('mlDropdown');
+            mlDropdown.innerHTML = '';
+            
+            // Available algorithms with display names
+            const algorithms = [
+                {value: 'linear_regression', name: 'Linear Regression'},
+                {value: 'logistic_regression', name: 'Logistic Regression'},
+                {value: 'random_forest', name: 'Random Forest'},
+                {value: 'decision_tree', name: 'Decision Tree'},
+                {value: 'svm', name: 'Support Vector Machine'},
+                {value: 'knn', name: 'K-Nearest Neighbors'},
+                {value: 'neural_network', name: 'Neural Network'}
+            ];
+            
+            // Create dropdown items for each algorithm
+            algorithms.forEach(algo => {
+                const item = document.createElement('div');
+                item.className = 'ml-item';
+                item.dataset.value = algo.value;
+                item.textContent = algo.name;
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Show parameters modal for this algorithm
+                    showParametersModal(this.dataset.value);
+                    
+                    // Close the dropdown
+                    document.getElementById('mlDropdownBtn').classList.remove('active');
+                    document.getElementById('mlDropdown').classList.remove('show');
+                });
+                mlDropdown.appendChild(item);
+            });
+        }
+    
+        /**
+         * Handles model training when the train button is clicked
+         */
+        function trainModel() {
+            if (window.selectedAlgorithms.length === 0) {
+                showErrorModal('Please select at least one algorithm', 'No Algorithms Selected');
+                return;
+            }
+    
+            const useSeparateFiles = document.getElementById('op1-radio').checked;
+            const useSingleFile = document.getElementById('op2-radio').checked;
+            const useExtractedData = document.getElementById('op3-radio').checked;
+            const formData = new FormData();
+            
+            // Prepare form data based on selected option
+            if (useSeparateFiles) {
+                const trainingFile = document.getElementById('trainingFile').files[0];
+                const testingFile = document.getElementById('testingFile').files[0];
+                const targetColumn = document.getElementById('targetColumnSeparate').value;
+                
+                if (!trainingFile || !testingFile) {
+                    showErrorModal('Please upload both training and testing files', 'Missing Files');
+                    return;
+                }
+                
+                formData.append('training_file', trainingFile);
+                formData.append('testing_file', testingFile);
+                formData.append('target_column', targetColumn);
+                formData.append('file_option', 'separate');
+                
+            } else if (useSingleFile) {
+                const datasetFile = document.getElementById('datasetFile').files[0];
+                const trainPercent = document.querySelector('input[name="train_percent"]').value;
+                const targetColumn = document.getElementById('targetColumn').value;
+                
+                if (!datasetFile) {
+                    showErrorModal('Please upload a dataset file', 'Missing File');
+                    return;
+                }
+                
+                formData.append('dataset_file', datasetFile);
+                formData.append('train_percent', trainPercent);
+                formData.append('target_column', targetColumn);
+                formData.append('file_option', 'single');
+            } else if (useExtractedData) {
+                // For extracted data, we don't need to upload files since they're already on the server
+                const trainPercent = document.querySelector('input[name="extracted_train_percent"]').value;
+                const targetColumn = document.getElementById('targetColumnExtracted').value;
+                
+                formData.append('extracted_data', 'true');
+                formData.append('train_percent', trainPercent);
+                formData.append('target_column', targetColumn);
+                formData.append('file_option', 'extracted');
+            }
+            
+            // Add selected algorithms and their parameters to form data
+            formData.append('algorithms', JSON.stringify(window.selectedAlgorithms));
+    
+            // UI state changes during training
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('trainButton').disabled = true;
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('reportSection').style.display = 'none';
+            document.getElementById('resultContent').innerHTML = '';
+    
+            // Get CSRF token for Django
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            const csrftoken = getCookie('csrftoken');
+    
+            // Make API request to train model
+            fetch("{% url 'train_model' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { 
+                        throw new Error(err.error || 'Network response was not ok') 
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Store model data globally
+                window.modelData = data;
+                
+                // Display results
+                displayResults(data);
+                
+                // Show the results and report sections
+                document.getElementById('results').style.display = 'block';
+                document.getElementById('reportSection').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showErrorModal('Training failed: ' + error.message, 'Training Error');
+            })
+            .finally(() => {
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('trainButton').disabled = false;
+            });
+        }
+    
+        /**
+         * Displays the training results including metrics and visualizations
+         * @param {Object} data - The training results data from the server
+         */
+        function displayResults(data) {
+            const resultContent = document.getElementById('resultContent');
+            
+            // Create main results card
+            let resultsHtml = `
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Model Training Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>Problem Type:</strong> ${data.problem_type}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Target Column:</strong> ${data.target_column}</p>
+                            </div>
+                        </div>
+            `;
+            
+            // Add comparative results table
+            if (data.results && data.results.length > 0) {
+                resultsHtml += `
+                    <div class="mb-4">
+                        <h5>Comparative Results</h5>
+                        <div class="table-responsive">
+                            <table class="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Algorithm</th>
+                                        <th>Accuracy</th>
+                                        <th>Precision</th>
+                                        <th>Recall</th>
+                                        <th>F1 Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+                
+                // Find best metrics for highlighting
+                const bestMetrics = {
+                    accuracy: Math.max(...data.results.map(r => r.accuracy || 0)),
+                    precision: Math.max(...data.results.map(r => r.precision || 0)),
+                    recall: Math.max(...data.results.map(r => r.recall || 0)),
+                    f1_score: Math.max(...data.results.map(r => r.f1_score || 0))
+                };
+                
+                // Add rows for each algorithm
+                data.results.forEach((result, index) => {
+                    resultsHtml += `
+                        <tr>
+                            <td>${result.algorithm}</td>
+                            <td class="${result.accuracy === bestMetrics.accuracy ? 'best-metric' : ''}">
+                                ${result.accuracy ? result.accuracy.toFixed(4) : 'N/A'}
+                            </td>
+                            <td class="${result.precision === bestMetrics.precision ? 'best-metric' : ''}">
+                                ${result.precision ? result.precision.toFixed(4) : 'N/A'}
+                            </td>
+                            <td class="${result.recall === bestMetrics.recall ? 'best-metric' : ''}">
+                                ${result.recall ? result.recall.toFixed(4) : 'N/A'}
+                            </td>
+                            <td class="${result.f1_score === bestMetrics.f1_score ? 'best-metric' : ''}">
+                                ${result.f1_score ? result.f1_score.toFixed(4) : 'N/A'}
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                resultsHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            resultsHtml += `</div></div>`;
+            resultContent.innerHTML = resultsHtml;
+            
+            // Add visualization section for binary classification
+            if (data.problem_type === 'classification' && data.binary_classification) {
+                const visualizationHtml = `
+                    <div class="visualization-section">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Model Performance Visualizations</h5>
+                            </div>
+                            <div class="card-body">
+                                ${data.results.some(r => r.roc_curve) ? '<div id="rocCurveContainer" class="chart-container mb-4"><canvas id="rocCurve"></canvas></div>' : ''}
+                                ${data.results.some(r => r.pr_curve) ? '<div id="prcCurveContainer" class="chart-container"><canvas id="prcCurve"></canvas></div>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                resultContent.insertAdjacentHTML('beforeend', visualizationHtml);
+                
+                // Draw charts for each algorithm's results
+                data.results.forEach((result, index) => {
+                    const color = getAlgorithmColor(index);
+                    
+                    if (result.roc_curve) {
+                        drawROCCurve(
+                            result.roc_curve.fpr, 
+                            result.roc_curve.tpr, 
+                            result.roc_curve.auc,
+                            result.algorithm,
+                            color
+                        );
+                    }
+                    
+                    if (result.pr_curve) {
+                        drawPRCCurve(
+                            result.pr_curve.recall, 
+                            result.pr_curve.precision, 
+                            result.pr_curve.auprc,
+                            result.algorithm,
+                            color
+                        );
+                    }
+                });
+            }
+        }
+
+        /**
+         * Generates and downloads an analysis report
+         */
+        function generateAnalysisReport() {
+            if (!window.modelData) {
+                showErrorModal('No model data available to generate report', 'No Data');
+                return;
+            }
+
+            const reportFormat = document.getElementById('reportFormat').value;
+            const reportName = document.getElementById('reportName').value || 'Model_Analysis_Report';
+            const includeMetrics = document.getElementById('includeMetrics').checked;
+            const includeCharts = document.getElementById('includeCharts').checked;
+            const includeParameters = document.getElementById('includeParameters').checked;
+
+            // Validate at least one section is selected
+            if (!includeMetrics && !includeCharts && !includeParameters) {
+                showErrorModal('Please select at least one section to include in the report', 'No Sections Selected');
+                return;
+            }
+
+            // Show loading indicator
+            document.getElementById('reportLoadingIndicator').style.display = 'block';
+            document.getElementById('generateReportBtn').disabled = true;
+
+            // Prepare report data
+            const reportData = {
+                model_data: window.modelData,
+                format: reportFormat,
+                report_name: reportName,
+                options: {
+                    include_metrics: includeMetrics,
+                    include_charts: includeCharts,
+                    include_parameters: includeParameters
+                }
+            };
+
+            // Get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            const csrftoken = getCookie('csrftoken');
+
+            // Make API request to generate report
+            fetch("{% url 'generate_model_report' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(reportData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { 
+                        throw new Error(err.error || 'Network response was not ok') 
+                    });
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${reportName}.${reportFormat}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showErrorModal('Report generation failed: ' + error.message, 'Report Error');
+            })
+            .finally(() => {
+                document.getElementById('reportLoadingIndicator').style.display = 'none';
+                document.getElementById('generateReportBtn').disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
